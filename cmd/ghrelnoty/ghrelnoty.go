@@ -37,7 +37,12 @@ func run() error {
 		return err
 	}
 
-	svc := internal.New(config)
+	svc, err := internal.New(config)
+	if err != nil {
+		slog.Error("cannot initialize service", slog.Any("err", err))
+		return err
+	}
+	defer svc.Close()
 	slog.Info("service ready to work")
 
 	go svc.Work()
@@ -50,6 +55,7 @@ func run() error {
 		return fmt.Errorf("service error: %w", err)
 	case <-shutdown:
 		slog.Info("gracefully shutting down")
+		svc.Close()
 	}
 
 	return nil

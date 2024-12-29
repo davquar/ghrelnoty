@@ -26,10 +26,10 @@ func run() error {
 	flag.Parse()
 
 	if configPath == "" {
-		configPath = os.Getenv("GHRELNOTIFY_CONFIG_PATH")
+		configPath = os.Getenv("GHRELNOTY_CONFIG_PATH")
 	}
 	if configPath == "" {
-		return fmt.Errorf("config path not given: use --config-path or GHRELNOTIFY_CONFIG_PATH")
+		return fmt.Errorf("config path not given: use --config-path or GHRELNOTY_CONFIG_PATH")
 	}
 
 	config, err := loadConfig(configPath)

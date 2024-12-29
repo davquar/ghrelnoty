@@ -1,0 +1,17 @@
+log_level: debug
+check_every: 10s
+repositories:
+  - name: firefly-iii/firefly-iii
+    prereleases: false
+    destination: email
+  - name: AdguardTeam/AdGuardHome
+    prereleases: false
+    destiation: email
+destinations:
+  email:
+    type: smtp
+    from: sample
+    to: sample
+    server: localhost:53
+    username: demo
+    password: demo

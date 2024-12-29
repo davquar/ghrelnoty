@@ -1,0 +1,37 @@
+linters:
+  enable:
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - contextcheck
+    - dogsled
+    - durationcheck
+    - errname
+    - errorlint
+    - exportloopref
+    - forbidigo
+    - forcetypeassert
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - godox
+    - gofmt
+    - gosec
+    - importas
+    - nakedret
+    - nestif
+    - prealloc
+    - revive
+    - unconvert
+    - unparam
+    - whitespace
+    # - wastedassign [disabled because of generics]
+    # - sqlclosecheck [disabled because of generics]
+    # - rowserrcheck [disabled because of generics]
+
+linters-settings:
+  goconst:
+    min-occurrences: 5
+
+  nestif:
+    min-complexity: 20

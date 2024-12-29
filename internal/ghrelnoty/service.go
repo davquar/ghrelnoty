@@ -37,7 +37,7 @@ func New(config Config) (Service, error) {
 func (s Service) Work() error {
 	ticker := time.NewTicker(s.Config.CheckEvery)
 	go func() {
-		for range ticker.C {
+		for ; true; <-ticker.C {
 			for _, repo := range s.Config.Repositories {
 				ctx := context.Background()
 				release, err := repo.GetLatestRelease(ctx)

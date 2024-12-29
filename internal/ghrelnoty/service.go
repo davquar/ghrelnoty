@@ -60,7 +60,11 @@ func (s Service) Work() error {
 						continue
 					}
 
-					dst.Notify()
+					err := dst.Notify(repo.Name, release)
+					if err != nil {
+						slog.Error("cannot notify", slog.Any("err", err))
+						continue
+					}
 				}
 			}
 		}

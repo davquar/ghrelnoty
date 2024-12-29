@@ -1,5 +1,5 @@
 log_level: debug
-check_every: 10s
+check_every: 3h
 db_path: demo/.ghrelnoty.db
 repositories:
   - name: firefly-iii/firefly-iii
@@ -9,6 +9,7 @@ destinations:
     type: smtp
     from: sample
     to: sample
-    server: localhost:53
+    host: localhost
+    port: 587
     username: demo
     password: demo

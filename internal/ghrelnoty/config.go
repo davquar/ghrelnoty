@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/smtp"
 	"strings"
 	"time"
 
@@ -43,11 +44,22 @@ func (r Repository) GetLatestRelease(ctx context.Context) (string, error) {
 type Destination struct {
 	From     string `yaml:"from"`
 	To       string `yaml:"to"`
-	Server   string `yaml:"server"`
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 }
 
-func (d Destination) Notify() {
-	fmt.Println("fake notification", d)
+func (d Destination) Notify(repo string, release string) error {
+	subject := fmt.Sprintf("New release: %s:%s", repo, release)
+	body := fmt.Sprintf("GHRelNoty detected a new release: %s:%s", repo, release)
+	msg := []byte(fmt.Sprintf("From: %s\r\n"+
+		"To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"\r\n"+
+		"%s\r\n", d.From, d.To, subject, body))
+	auth := smtp.PlainAuth("", d.From, d.Password, d.Host)
+	err := smtp.SendMail(d.Host+":"+d.Port, auth, d.From, []string{d.To}, msg)
+
+	return err
 }

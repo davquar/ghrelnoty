@@ -35,6 +35,28 @@ func (s *Store) Get(key string) (string, error) {
 	return string(value), err
 }
 
+func (s *Store) CompareAndSet(key string, value string) (bool, error) {
+	var changed bool
+	err := s.DB.Update(func(tx *bolt.Tx) error {
+		b, _ := tx.CreateBucketIfNotExists([]byte(ReleasesBucket))
+		current := b.Get([]byte(key))
+
+		if string(current) == value {
+			return nil
+		}
+
+		err := b.Put([]byte(key), []byte(value))
+		if err != nil {
+			return fmt.Errorf("put: %w", err)
+		}
+		changed = true
+
+		return nil
+	})
+
+	return changed, err
+}
+
 func (s *Store) Set(key string, value string) error {
 	err := s.DB.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte(ReleasesBucket))

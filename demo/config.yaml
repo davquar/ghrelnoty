@@ -1,6 +1,6 @@
 log_level: debug
 check_every: 10s
-db_path: .ghrelnoty.db
+db_path: demo/.ghrelnoty.db
 repositories:
   - name: firefly-iii/firefly-iii
     destination: email

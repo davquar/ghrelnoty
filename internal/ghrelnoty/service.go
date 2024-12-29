@@ -46,12 +46,12 @@ func (s Service) Work() error {
 					continue
 				}
 
-				err = s.Store.Set(repo.Name, release)
+				changed, err := s.Store.CompareAndSet(repo.Name, release)
 				if err != nil {
 					slog.ErrorContext(ctx, "can't store in db", slog.String("repo", repo.Name), slog.Any("err", err))
 				}
 
-				slog.Debug("updated", slog.String("repo", repo.Name), slog.String("release", release))
+				slog.Debug("got data", slog.String("repo", repo.Name), slog.String("release", release), slog.Bool("changed", changed))
 			}
 		}
 	}()

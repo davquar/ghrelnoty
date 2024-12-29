@@ -52,6 +52,16 @@ func (s Service) Work() error {
 				}
 
 				slog.Debug("got data", slog.String("repo", repo.Name), slog.String("release", release), slog.Bool("changed", changed))
+
+				if changed {
+					dst, ok := s.Config.Destinations[repo.Destination]
+					if !ok {
+						slog.Error("destination not found", slog.String("destination", repo.Destination))
+						continue
+					}
+
+					dst.Notify()
+				}
 			}
 		}
 	}()

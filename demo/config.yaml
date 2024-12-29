@@ -4,8 +4,6 @@ db_path: demo/.ghrelnoty.db
 repositories:
   - name: firefly-iii/firefly-iii
     destination: email
-  - name: AdguardTeam/AdGuardHome
-    destiation: email
 destinations:
   email:
     type: smtp

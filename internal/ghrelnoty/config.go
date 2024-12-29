@@ -23,8 +23,6 @@ type Repository struct {
 	Destination string `yaml:"destination"`
 }
 
-type Destination struct{}
-
 func (r Repository) SeparateName() (string, string) {
 	repo := strings.Split(r.Name, "/")
 	return repo[0], repo[1]
@@ -40,4 +38,16 @@ func (r Repository) GetLatestRelease(ctx context.Context) (string, error) {
 	}
 
 	return release.GetName(), nil
+}
+
+type Destination struct {
+	From     string `yaml:"from"`
+	To       string `yaml:"to"`
+	Server   string `yaml:"server"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+}
+
+func (d Destination) Notify() {
+	fmt.Println("fake notification", d)
 }

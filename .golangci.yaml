@@ -8,7 +8,7 @@ linters:
     - durationcheck
     - errname
     - errorlint
-    - exportloopref
+    - copyloopvar
     - forbidigo
     - forcetypeassert
     - gochecknoinits
@@ -25,9 +25,6 @@ linters:
     - unconvert
     - unparam
     - whitespace
-    # - wastedassign [disabled because of generics]
-    # - sqlclosecheck [disabled because of generics]
-    # - rowserrcheck [disabled because of generics]
 
 linters-settings:
   goconst:

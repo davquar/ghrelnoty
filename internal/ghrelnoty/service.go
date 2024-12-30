@@ -34,7 +34,7 @@ func New(config Config) (Service, error) {
 	return s, nil
 }
 
-func (s Service) Work() error {
+func (s Service) Work() {
 	ticker := time.NewTicker(s.Config.CheckEvery)
 	go func() {
 		for ; true; <-ticker.C {
@@ -69,7 +69,6 @@ func (s Service) Work() error {
 			}
 		}
 	}()
-	return nil
 }
 
 func (s *Service) Close() {

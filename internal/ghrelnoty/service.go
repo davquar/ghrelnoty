@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"it.davquar/gitrelnot/internal/store"
+	"it.davquar/gitrelnoty/internal/store"
 )
 
 type Service struct {

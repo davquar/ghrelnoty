@@ -1,4 +1,4 @@
-module it.davquar/gitrelnot
+module it.davquar/gitrelnoty
 
 go 1.22.10
 

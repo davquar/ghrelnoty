@@ -32,3 +32,5 @@ destinations:
     port: 587
     username: demo
     password: demo
+
+metrics_port: 9090

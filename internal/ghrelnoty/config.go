@@ -13,4 +13,5 @@ type Config struct {
 	SleepBetween time.Duration          `yaml:"sleep_between"`
 	Repositories []Repository           `yaml:"repositories"`
 	Destinations map[string]Destination `yaml:"destinations"`
+	MetricsPort  int                    `yaml:"metrics_port"`
 }

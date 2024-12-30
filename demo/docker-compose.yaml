@@ -1,0 +1,13 @@
+services:
+  ghrelnoty:
+    image: ghcr.io/davquar/ghrelnoty
+    container_name: ghrelnoty
+    restart: unless-stopped
+    environment:
+      GHRELNOTIFY_CONFIG_PATH: ./config.yaml
+    volumes:
+      - "data:/data"
+      - "./config.yaml:/app/config.yaml:ro"
+
+volumes:
+  data:

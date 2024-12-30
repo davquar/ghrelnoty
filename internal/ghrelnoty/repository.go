@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v68/github"
+	"it.davquar/gitrelnoty/internal/metrics"
 )
 
 // Repository holds data needed to identify the repository to watch
@@ -33,6 +34,9 @@ func (r Repository) GetLatestRelease(ctx context.Context) (string, RateLimitData
 	if errr != nil {
 		return "", rateLimitData, fmt.Errorf("can't get rate limit data: %w", err)
 	}
+
+	metrics.SetRateLimitValue(float64(rateLimitData.Limit))
+	metrics.SetRateLimitUsedValue(float64(rateLimitData.Used))
 
 	rateLimitErr := isRateLimited(err)
 	if rateLimitErr != nil {

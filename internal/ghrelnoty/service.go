@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"it.davquar/gitrelnoty/internal/metrics"
 	"it.davquar/gitrelnoty/internal/store"
 )
 
@@ -31,6 +32,7 @@ func New(config Config) (Service, error) {
 
 	db, err := store.Open(s.Config.DBPath)
 	if err != nil {
+		metrics.DBOpenError()
 		return Service{}, fmt.Errorf("cannot open db: %w", err)
 	}
 	s.Store = db
@@ -44,22 +46,27 @@ func New(config Config) (Service, error) {
 // - Write to the database.
 // - Notify in case of a new release.
 func (s Service) Work() {
+	time.Sleep(10 * time.Minute)
 	ticker := time.NewTicker(s.Config.CheckEvery)
 	for ; true; <-ticker.C {
 		for _, repo := range s.Config.Repositories {
 			time.Sleep(s.Config.SleepBetween)
 			ctx := context.Background()
 			release, rateLimitData, err := repo.GetLatestRelease(ctx)
+
 			if rateLimitData.IsAtRisk() {
+				metrics.RateLimitRisk()
 				slog.WarnContext(ctx, "currently at risk of hitting rate limit. Pausing for 30 minutes")
 				time.Sleep(30 * time.Minute)
 			}
 
 			if err != nil {
+				metrics.CannotGetRelease()
 				slog.ErrorContext(ctx, "can't get latest release", slog.Any("err", err))
 
 				var errRateLimited *RateLimitError
 				if errors.As(err, &errRateLimited) {
+					metrics.RateLimited()
 					slog.ErrorContext(ctx, "hit rate limit: resuming activities at", slog.Any("time", rateLimitData.ResetAt))
 					time.Sleep(time.Until(rateLimitData.ResetAt))
 				}
@@ -68,20 +75,24 @@ func (s Service) Work() {
 
 			changed, err := s.Store.CompareAndSet(repo.Name, release)
 			if err != nil {
+				metrics.DBError()
 				slog.ErrorContext(ctx, "can't store in db", slog.String("repo", repo.Name), slog.Any("err", err))
 			}
 
 			slog.Debug("got data", slog.String("repo", repo.Name), slog.String("release", release), slog.Bool("changed", changed))
 
 			if changed {
+				metrics.NewReleaseFound()
 				dst, ok := s.Config.Destinations[repo.Destination]
 				if !ok {
+					metrics.NotificationError()
 					slog.Error("destination not found", slog.String("destination", repo.Destination))
 					continue
 				}
 
 				err := dst.Notify(repo.Name, release)
 				if err != nil {
+					metrics.NotificationError()
 					slog.Error("cannot notify", slog.Any("err", err))
 					continue
 				}

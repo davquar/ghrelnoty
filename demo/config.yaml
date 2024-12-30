@@ -1,9 +1,28 @@
+# log level: error, info, debug
 log_level: debug
+
+# time between batches of requests.
 check_every: 3h
+
+# time between each request, mainly useful to avoid
+# getting rate limited if requests are not authenticated
+# and there are multiple repositories to check.
+sleep_between: 2m
+
+# path to store the database
 db_path: demo/.ghrelnoty.db
+
+# array of repositories to check
+# format:
+# - name: author/repo-name
+#   destination: dest-name
 repositories:
   - name: firefly-iii/firefly-iii
     destination: email
+
+# dictionary of destinations for notifications
+# only one destination of type smtp is supported.
+# name the destination as you wish (e.g., email).
 destinations:
   email:
     type: smtp

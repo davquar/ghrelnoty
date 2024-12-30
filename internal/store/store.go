@@ -6,12 +6,16 @@ import (
 	bolt "go.etcd.io/bbolt"
 )
 
+// ReleasesBucket is the name of the bucket in which release data
+// is stored on Bolt.
 const ReleasesBucket string = "releases"
 
+// Store holds the instance to the Bolt database.
 type Store struct {
 	DB *bolt.DB
 }
 
+// Open opens (creating it if needed) a new Bolt database file.
 func Open(path string) (Store, error) {
 	db, err := bolt.Open(path, 0600, nil)
 	if err != nil {
@@ -20,10 +24,12 @@ func Open(path string) (Store, error) {
 	return Store{DB: db}, nil
 }
 
+// Close closes the connection with the database.
 func (s *Store) Close() error {
 	return s.DB.Close()
 }
 
+// Get returns the value of the given key from the database.
 func (s *Store) Get(key string) (string, error) {
 	var value []byte
 	err := s.DB.View(func(tx *bolt.Tx) error {
@@ -35,6 +41,8 @@ func (s *Store) Get(key string) (string, error) {
 	return string(value), err
 }
 
+// CompareAndSet writes the given value for the given key in the database, if the new
+// and current values are different, returning true if the change has been done.
 func (s *Store) CompareAndSet(key string, value string) (bool, error) {
 	var changed bool
 	err := s.DB.Update(func(tx *bolt.Tx) error {
@@ -57,6 +65,7 @@ func (s *Store) CompareAndSet(key string, value string) (bool, error) {
 	return changed, err
 }
 
+// Set writes the given value for the given key in the database.
 func (s *Store) Set(key string, value string) error {
 	err := s.DB.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte(ReleasesBucket))

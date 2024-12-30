@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Config holds the app's configuration.
 type Config struct {
 	LogLevel     slog.Level             `yaml:"log_level"`
 	DBPath       string                 `yaml:"db_path"`

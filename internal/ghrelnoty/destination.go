@@ -5,6 +5,7 @@ import (
 	"net/smtp"
 )
 
+// Destination holds the configuration for the SMTP destination.
 type Destination struct {
 	From     string `yaml:"from"`
 	To       string `yaml:"to"`
@@ -14,6 +15,7 @@ type Destination struct {
 	Password string `yaml:"password"`
 }
 
+// Notify sends an email to Destination, to announce a new release of the given repo.
 func (d Destination) Notify(repo string, release string) error {
 	subject := fmt.Sprintf("New release: %s:%s", repo, release)
 	body := fmt.Sprintf("GHRelNoty detected a new release: %s:%s", repo, release)

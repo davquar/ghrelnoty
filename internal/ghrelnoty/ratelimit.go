@@ -10,6 +10,8 @@ import (
 	"github.com/google/go-github/v68/github"
 )
 
+// RateLimitError is a generic error type that represents a rate limiting error
+// of a specific type: "primary", or "secondary" if it is classified as abuse.
 type RateLimitError struct {
 	Type string `json:"type"`
 }
@@ -18,6 +20,8 @@ func (e RateLimitError) Error() string {
 	return fmt.Sprintf("Rate limited: %s", e.Type)
 }
 
+// RateLimitData holds counters that describe the current usage of the API, wrt
+// GitHub's rate limits. This data is extracted from GitHub's HTTP responses.
 type RateLimitData struct {
 	Limit     int
 	Remaining int
@@ -25,14 +29,20 @@ type RateLimitData struct {
 	ResetAt   time.Time
 }
 
+// GetUsedPercent returns the current usage percentage, compared to the limits.
+// It is expressed as a float in the iterval 0.0 and 1.0.
 func (r RateLimitData) GetUsedPercent() float64 {
 	return float64(r.Used) / float64(r.Limit)
 }
 
+// IsAtRisk returns true if there is a risk of hitting the rate limit, namely when
+// more than 80% of the limits are used.
 func (r RateLimitData) IsAtRisk() bool {
 	return r.GetUsedPercent() > 0.8
 }
 
+// makeRateLimitData returns the RateLimitData after extrating needed values from
+// the given HTTP headers.
 func makeRateLimitData(headers http.Header) (RateLimitData, error) {
 	limitStr := headers.Get("x-ratelimit-limit")
 	remainingStr := headers.Get("x-ratelimit-remaining")
@@ -65,6 +75,8 @@ func makeRateLimitData(headers http.Header) (RateLimitData, error) {
 	}, nil
 }
 
+// isRateLimited returns an RateLimitError if the given error is a GitHub
+// rate limiting error, namely a github.RateLimitError or github.AbuseRateLimitError.
 func isRateLimited(err error) error {
 	var rateLimitError *github.RateLimitError
 	var abuseRateLimitError *github.AbuseRateLimitError

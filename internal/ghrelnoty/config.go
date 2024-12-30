@@ -2,14 +2,40 @@ package ghrelnoty
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"net/smtp"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/google/go-github/v68/github"
 )
+
+type RateLimitError struct {
+	Type string `json:"type"`
+}
+
+func (e RateLimitError) Error() string {
+	return fmt.Sprintf("Rate limited: %s", e.Type)
+}
+
+type RateLimitData struct {
+	Limit     int
+	Remaining int
+	Used      int
+	ResetAt   time.Time
+}
+
+func (r RateLimitData) GetUsedPercent() float64 {
+	return float64(r.Used) / float64(r.Limit)
+}
+
+func (r RateLimitData) IsAtRisk() bool {
+	return r.GetUsedPercent() > 0.8
+}
 
 type Config struct {
 	LogLevel     slog.Level             `yaml:"log_level"`
@@ -30,16 +56,78 @@ func (r Repository) SeparateName() (string, string) {
 	return repo[0], repo[1]
 }
 
-func (r Repository) GetLatestRelease(ctx context.Context) (string, error) {
+func (r Repository) GetLatestRelease(ctx context.Context) (string, RateLimitData, error) {
 	client := github.NewClient(nil)
 
 	author, repo := r.SeparateName()
-	release, _, err := client.Repositories.GetLatestRelease(ctx, author, repo)
-	if err != nil {
-		return "", fmt.Errorf("%s: %w", r.Name, err)
+	release, resp, err := client.Repositories.GetLatestRelease(ctx, author, repo)
+
+	rateLimitData, errr := makeRateLimitData(resp.Header)
+	if errr != nil {
+		return "", rateLimitData, fmt.Errorf("can't get rate limit data: %w", err)
 	}
 
-	return release.GetName(), nil
+	rateLimitErr := isRateLimited(err)
+	if rateLimitErr != nil {
+		return "", rateLimitData, rateLimitErr
+	}
+
+	if err != nil {
+		return "", rateLimitData, fmt.Errorf("%s: %w", r.Name, err)
+	}
+
+	return release.GetName(), rateLimitData, nil
+}
+
+func makeRateLimitData(headers http.Header) (RateLimitData, error) {
+	limitStr := headers.Get("x-ratelimit-limit")
+	remainingStr := headers.Get("x-ratelimit-remaining")
+	usedStr := headers.Get("x-ratelimit-used")
+	resetStr := headers.Get("x-ratelimit-reset")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		return RateLimitData{}, fmt.Errorf("convert: %w", err)
+	}
+	remaining, err := strconv.Atoi(remainingStr)
+	if err != nil {
+		return RateLimitData{}, fmt.Errorf("convert: %w", err)
+	}
+	used, err := strconv.Atoi(usedStr)
+	if err != nil {
+		return RateLimitData{}, fmt.Errorf("convert: %w", err)
+	}
+	reset, err := strconv.ParseInt(resetStr, 10, 64)
+	if err != nil {
+		return RateLimitData{}, fmt.Errorf("parse: %w", err)
+	}
+	resetTime := time.Unix(reset, 0)
+
+	return RateLimitData{
+		Limit:     limit,
+		Remaining: remaining,
+		Used:      used,
+		ResetAt:   resetTime,
+	}, nil
+}
+
+func isRateLimited(err error) error {
+	var rateLimitError *github.RateLimitError
+	var abuseRateLimitError *github.AbuseRateLimitError
+
+	if errors.As(err, &rateLimitError) {
+		return &RateLimitError{
+			Type: "primary",
+		}
+	}
+
+	if errors.As(err, &abuseRateLimitError) {
+		return &RateLimitError{
+			Type: "secondary",
+		}
+	}
+
+	return nil
 }
 
 type Destination struct {

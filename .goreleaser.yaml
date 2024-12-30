@@ -1,3 +1,5 @@
+version: 2
+
 builds:
   - id: "ghrelnoty"
     main: ./cmd/ghrelnoty
@@ -17,3 +19,16 @@ builds:
     goarm:
       - "6"
       - "7"
+
+kos:
+  - repositories:
+      - ghcr.io/davquar/ghrelnoty
+    tags:
+      - "{{.Tag}}"
+      - latest
+    bare: true
+    main: ./cmd/ghrelnoty
+    preserve_import_paths: false
+    platforms:
+      - linux/amd64
+      - linux/arm64

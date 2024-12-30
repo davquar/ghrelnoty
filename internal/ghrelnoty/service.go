@@ -39,6 +39,7 @@ func (s Service) Work() {
 	go func() {
 		for ; true; <-ticker.C {
 			for _, repo := range s.Config.Repositories {
+				time.Sleep(s.Config.SleepBetween)
 				ctx := context.Background()
 				release, err := repo.GetLatestRelease(ctx)
 				if err != nil {

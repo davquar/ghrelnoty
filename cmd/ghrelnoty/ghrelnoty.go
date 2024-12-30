@@ -18,7 +18,7 @@ import (
 
 func main() {
 	if err := run(); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "error: %v", err)
+		slog.Error("cannot start", slog.Any("err", err))
 		os.Exit(1)
 	}
 }
@@ -42,8 +42,7 @@ func run() error {
 
 	svc, err := internal.New(config)
 	if err != nil {
-		slog.Error("cannot initialize service", slog.Any("err", err))
-		return err
+		return fmt.Errorf("service initialization: %w", err)
 	}
 	defer svc.Close()
 
@@ -61,7 +60,7 @@ func run() error {
 		slog.Info("starting metrics server")
 		err := metricsServer.ListenAndServe()
 		if err != nil {
-			serviceErrors <- fmt.Errorf("cannot start metrics server: %w", err)
+			serviceErrors <- fmt.Errorf("metrics server startup: %w", err)
 		}
 	}(serviceErrors)
 
@@ -70,7 +69,6 @@ func run() error {
 
 	select {
 	case err := <-serviceErrors:
-		slog.Error("service error", slog.Any("err", err))
 		svc.Close()
 		return err
 	case <-shutdown:

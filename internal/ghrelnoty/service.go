@@ -8,14 +8,17 @@ import (
 	"os"
 	"time"
 
-	"it.davquar/gitrelnot/internal/store"
+	"it.davquar/gitrelnoty/internal/store"
 )
 
+// Service holds the app's configuration and an instance of the KV store
+// in which release data is saved for each repository.
 type Service struct {
 	Config Config
 	Store  store.Store
 }
 
+// New initializes logging, opens the database and returns a new Service.
 func New(config Config) (Service, error) {
 	s := Service{
 		Config: config,
@@ -35,6 +38,11 @@ func New(config Config) (Service, error) {
 	return s, nil
 }
 
+// Work is a coordinator function that calls functions to:
+// - Check releases for the configured repositories.
+// - Handle rate limiting prevention and remediation.
+// - Write to the database.
+// - Notify in case of a new release.
 func (s Service) Work() {
 	ticker := time.NewTicker(s.Config.CheckEvery)
 	for ; true; <-ticker.C {
@@ -50,7 +58,7 @@ func (s Service) Work() {
 			if err != nil {
 				slog.ErrorContext(ctx, "can't get latest release", slog.Any("err", err))
 
-				var errRateLimited RateLimitError
+				var errRateLimited *RateLimitError
 				if errors.As(err, &errRateLimited) {
 					slog.ErrorContext(ctx, "hit rate limit: resuming activities at", slog.Any("time", rateLimitData.ResetAt))
 					time.Sleep(time.Until(rateLimitData.ResetAt))
@@ -82,6 +90,7 @@ func (s Service) Work() {
 	}
 }
 
+// Close closes the Service's handles, currently only the database.
 func (s *Service) Close() {
 	s.Store.Close()
 }

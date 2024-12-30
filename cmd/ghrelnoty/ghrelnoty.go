@@ -10,7 +10,7 @@ import (
 	"syscall"
 
 	yaml "gopkg.in/yaml.v3"
-	internal "it.davquar/gitrelnot/internal/ghrelnoty"
+	internal "it.davquar/gitrelnoty/internal/ghrelnoty"
 )
 
 func main() {

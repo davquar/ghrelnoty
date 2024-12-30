@@ -50,7 +50,7 @@ func (s Service) Work() {
 			if err != nil {
 				slog.ErrorContext(ctx, "can't get latest release", slog.Any("err", err))
 
-				var errRateLimited RateLimitError
+				var errRateLimited *RateLimitError
 				if errors.As(err, &errRateLimited) {
 					slog.ErrorContext(ctx, "hit rate limit: resuming activities at", slog.Any("time", rateLimitData.ResetAt))
 					time.Sleep(time.Until(rateLimitData.ResetAt))

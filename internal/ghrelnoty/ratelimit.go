@@ -41,19 +41,19 @@ func makeRateLimitData(headers http.Header) (RateLimitData, error) {
 
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
-		return RateLimitData{}, fmt.Errorf("convert: %w", err)
+		return RateLimitData{}, fmt.Errorf("convert limit: %w", err)
 	}
 	remaining, err := strconv.Atoi(remainingStr)
 	if err != nil {
-		return RateLimitData{}, fmt.Errorf("convert: %w", err)
+		return RateLimitData{}, fmt.Errorf("convert remaining: %w", err)
 	}
 	used, err := strconv.Atoi(usedStr)
 	if err != nil {
-		return RateLimitData{}, fmt.Errorf("convert: %w", err)
+		return RateLimitData{}, fmt.Errorf("convert used: %w", err)
 	}
 	reset, err := strconv.ParseInt(resetStr, 10, 64)
 	if err != nil {
-		return RateLimitData{}, fmt.Errorf("parse: %w", err)
+		return RateLimitData{}, fmt.Errorf("parse reset: %w", err)
 	}
 	resetTime := time.Unix(reset, 0)
 

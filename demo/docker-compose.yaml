@@ -4,10 +4,12 @@ services:
     container_name: ghrelnoty
     restart: unless-stopped
     environment:
-      GHRELNOTIFY_CONFIG_PATH: ./config.yaml
+      GHRELNOTY_CONFIG_PATH: /etc/ghrelnoty/config.yaml
+    ports:
+      - "9090:9090"
     volumes:
-      - "data:/data"
-      - "./config.yaml:/app/config.yaml:ro"
+      - "data:/var/lib/ghrelnoty"
+      - "./config.yaml:/etc/ghrelnoty/config.yaml:ro"
 
 volumes:
   data:

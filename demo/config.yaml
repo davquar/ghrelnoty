@@ -10,7 +10,7 @@ check_every: 3h
 sleep_between: 2m
 
 # path to store the database
-db_path: demo/.ghrelnoty.db
+db_path: /var/lib/ghrelnoty/ghrelnoty.db
 
 # array of repositories to check
 # format:

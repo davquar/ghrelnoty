@@ -1,5 +1,0 @@
-FROM scratch
-COPY ghrelnoty /app/ghrelnoty
-
-WORKDIR /app
-ENTRYPOINT ["./ghrelnoty"]

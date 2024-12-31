@@ -27,8 +27,10 @@ kos:
       - "{{.Tag}}"
       - latest
     bare: true
+    user: "0:0"
     main: ./cmd/ghrelnoty
     preserve_import_paths: false
+    sbom: none
     platforms:
       - linux/amd64
       - linux/arm64

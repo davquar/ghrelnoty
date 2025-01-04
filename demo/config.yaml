@@ -1,4 +1,4 @@
-# log level: error, info, debug
+# log level: error, warning, info, debug
 log_level: debug
 
 # time between batches of requests.

@@ -1,4 +1,4 @@
-package ghrelnoty
+package smtp
 
 import (
 	"fmt"

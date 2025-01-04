@@ -89,7 +89,14 @@ func (s Service) Work() {
 					continue
 				}
 
-				err := dst.Notify(repo.Name, release)
+				notifier, err := dst.Notifier()
+				if err != nil {
+					metrics.NotificationError()
+					slog.Error("cannot get notifier", slog.Any("err", err))
+					continue
+				}
+
+				err = notifier.Notify(repo.Name, release)
 				if err != nil {
 					metrics.NotificationError()
 					slog.Error("cannot notify", slog.Any("err", err))

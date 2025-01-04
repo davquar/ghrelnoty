@@ -46,7 +46,6 @@ func New(config Config) (Service, error) {
 // - Write to the database.
 // - Notify in case of a new release.
 func (s Service) Work() {
-	time.Sleep(10 * time.Minute)
 	ticker := time.NewTicker(s.Config.CheckEvery)
 	for ; true; <-ticker.C {
 		for _, repo := range s.Config.Repositories {

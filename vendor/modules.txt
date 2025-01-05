@@ -21,6 +21,9 @@ github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
 # github.com/kr/text v0.2.0
 ## explicit
+# github.com/mocktools/go-smtp-mock/v2 v2.4.0
+## explicit; go 1.15
+github.com/mocktools/go-smtp-mock/v2
 # github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
 ## explicit
 github.com/munnerz/goautoneg

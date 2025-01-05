@@ -24,8 +24,16 @@ func (d Destination) Notify(repo string, release string) error {
 		"Subject: %s\r\n"+
 		"\r\n"+
 		"%s\r\n", d.From, d.To, subject, body))
-	auth := smtp.PlainAuth("", d.From, d.Password, d.Host)
-	err := smtp.SendMail(d.Host+":"+d.Port, auth, d.From, []string{d.To}, msg)
+
+	err := smtp.SendMail(d.Host+":"+d.Port, d.auth(), d.From, []string{d.To}, msg)
 
 	return err
+}
+
+// auth returns smtp.Auth if username and password are set, otherwise nil indicating NOAUTH
+func (d Destination) auth() smtp.Auth {
+	if d.Username == "" && d.Password == "" {
+		return nil
+	}
+	return smtp.PlainAuth("", d.From, d.Password, d.Host)
 }

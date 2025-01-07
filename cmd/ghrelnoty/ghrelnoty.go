@@ -65,7 +65,7 @@ func run() error {
 	}(serviceErrors)
 
 	slog.Info("service ready to work")
-	go svc.Work()
+	go svc.WorkLoop()
 
 	select {
 	case err := <-serviceErrors:

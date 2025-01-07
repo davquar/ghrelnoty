@@ -14,6 +14,7 @@ import (
 type Repository struct {
 	Name        string `yaml:"name"`
 	Destination string `yaml:"destination"`
+	releaser    Releaser
 }
 
 // SeparateName returns a pair of repo-owner and repo-name, from a string

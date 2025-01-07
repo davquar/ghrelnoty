@@ -32,6 +32,10 @@ type Notifier interface {
 	Notify(repo string, release string) error
 }
 
+type Releaser interface {
+	GetLatestRelease(context.Context) (string, RateLimitData, error)
+}
+
 // UnmarshalYAML implements custom unmarshaling logic to produce the
 // appropriate DestinationConfig.Config implementation based on DestinationConfig.Type.
 func (dc *DestinationConfig) UnmarshalYAML(value *yaml.Node) error {

@@ -46,7 +46,6 @@ func New(config Config) (Service, error) {
 // - Write to the database.
 // - Notify in case of a new release.
 func (s Service) Work() {
-	time.Sleep(10 * time.Minute)
 	ticker := time.NewTicker(s.Config.CheckEvery)
 	for ; true; <-ticker.C {
 		for _, repo := range s.Config.Repositories {
@@ -90,7 +89,14 @@ func (s Service) Work() {
 					continue
 				}
 
-				err := dst.Notify(repo.Name, release)
+				notifier, err := dst.Notifier()
+				if err != nil {
+					metrics.NotificationError()
+					slog.Error("cannot get notifier", slog.Any("err", err))
+					continue
+				}
+
+				err = notifier.Notify(repo.Name, release)
 				if err != nil {
 					metrics.NotificationError()
 					slog.Error("cannot notify", slog.Any("err", err))

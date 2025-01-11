@@ -85,7 +85,7 @@ func loadConfig(path string) (internal.Config, error) {
 		return internal.Config{}, fmt.Errorf("can't load config: %w", err)
 	}
 
-	config := internal.Config{}
+	var config internal.Config
 	err = yaml.Unmarshal(bytes, &config)
 	if err != nil {
 		return internal.Config{}, fmt.Errorf("cannot unmarshal yaml: %w", err)

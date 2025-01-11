@@ -22,6 +22,7 @@ require (
 
 require (
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/mocktools/go-smtp-mock/v2 v2.4.0
 	github.com/prometheus/client_golang v1.20.5
 	golang.org/x/sys v0.22.0 // indirect
 )

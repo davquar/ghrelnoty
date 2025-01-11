@@ -1,4 +1,4 @@
-# log level: error, info, debug
+# log level: error, warning, info, debug
 log_level: debug
 
 # time between batches of requests.
@@ -26,11 +26,12 @@ repositories:
 destinations:
   email:
     type: smtp
-    from: sample
-    to: sample
-    host: localhost
-    port: 587
-    username: demo
-    password: demo
+    config:
+      from: sample
+      to: sample
+      host: localhost
+      port: 587
+      username: demo
+      password: demo
 
 metrics_port: 9090

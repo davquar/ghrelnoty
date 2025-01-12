@@ -18,6 +18,7 @@ db_path: /var/lib/ghrelnoty/ghrelnoty.db
 #   destination: dest-name
 repositories:
   - name: firefly-iii/firefly-iii
+    type: github
     destination: email
 
 # dictionary of destinations for notifications

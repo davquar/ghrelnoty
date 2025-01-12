@@ -8,6 +8,17 @@ import (
 	"it.davquar/gitrelnoty/internal/ghrelnoty/destinations/smtp"
 )
 
+func TestSeparateName(t *testing.T) {
+	r := RepositoryConfig{
+		Name: "theauthor/thereponame",
+	}
+
+	author, reponame := r.SeparateName()
+	if author != "theauthor" && reponame != "thereponame" {
+		t.Fatalf("expected {theauthor, thereponame}, got: {%s, %s}", author, reponame)
+	}
+}
+
 func TestDestinationsYAMLUnmarshalOK(t *testing.T) {
 	y := `
 destinations:

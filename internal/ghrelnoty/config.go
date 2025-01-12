@@ -3,6 +3,7 @@ package ghrelnoty
 import (
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -15,9 +16,17 @@ type Config struct {
 	DBPath       string                       `yaml:"db_path"`
 	CheckEvery   time.Duration                `yaml:"check_every"`
 	SleepBetween time.Duration                `yaml:"sleep_between"`
-	Repositories []Repository                 `yaml:"repositories"`
+	Repositories []RepositoryConfig           `yaml:"repositories"`
 	Destinations map[string]DestinationConfig `yaml:"destinations"`
 	MetricsPort  int                          `yaml:"metrics_port"`
+}
+
+// RepositoryConfig holds data needed to identify the repository to watch
+// and the destination to send notifications to.
+type RepositoryConfig struct {
+	Type        string `yaml:"type"`
+	Name        string `yaml:"name"`
+	Destination string `yaml:"destination"`
 }
 
 // DestinationConfig holds specific notification settings.
@@ -27,9 +36,11 @@ type DestinationConfig struct {
 	Config interface{}
 }
 
-// Notifier is implemented by notification system (Destination)
-type Notifier interface {
-	Notify(repo string, release string) error
+// SeparateName returns a pair of repo-owner and repo-name, from a string
+// like repo-owner/repo-name
+func (r RepositoryConfig) SeparateName() (string, string) {
+	repo := strings.Split(r.Name, "/")
+	return repo[0], repo[1]
 }
 
 // UnmarshalYAML implements custom unmarshaling logic to produce the

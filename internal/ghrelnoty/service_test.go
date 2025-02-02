@@ -6,6 +6,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"it.davquar/gitrelnoty/pkg/release"
 )
 
 type dummyRepoConfig struct {
@@ -18,8 +20,14 @@ type dummyReleaser struct {
 	dummyRepoConfig
 }
 
-func (r dummyReleaser) GetLatestRelease(_ context.Context) (string, RateLimitData, error) {
-	return "v0.1.2", RateLimitData{}, nil
+func (r dummyReleaser) GetLatestRelease(_ context.Context) (release.Release, RateLimitData, error) {
+	return release.Release{
+		Project:     "name",
+		Author:      "author",
+		Version:     "v1.2.3",
+		Description: "some test description",
+		URL:         "https://github.com/davquar/ghrelnoty/releases/tag/v1.2.3",
+	}, RateLimitData{}, nil
 }
 
 func (r dummyReleaser) Config() RepositoryConfig {
@@ -28,9 +36,9 @@ func (r dummyReleaser) Config() RepositoryConfig {
 
 type dummyNotifier struct{}
 
-func (d dummyNotifier) Notify(owner string, repo string) error {
+func (d dummyNotifier) Notify(release release.Release) error {
 	// nolint (allow printing in the test output)
-	fmt.Println("dummy notification", owner, repo)
+	fmt.Println("dummy notification", release)
 	return nil
 }
 

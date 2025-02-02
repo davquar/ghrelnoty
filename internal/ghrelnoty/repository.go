@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/go-github/v68/github"
 	"it.davquar/gitrelnoty/internal/metrics"
+	"it.davquar/gitrelnoty/pkg/release"
 )
 
 type GitHubRepository struct {
@@ -16,16 +17,16 @@ func (r GitHubRepository) Config() RepositoryConfig {
 	return r.RepositoryConfig
 }
 
-// GetLatestRelease gets the latest release name for the repository and the current rate limits.
-func (r GitHubRepository) GetLatestRelease(ctx context.Context) (string, RateLimitData, error) {
+// GetLatestRelease gets the latest Release for the repository and the current rate limits.
+func (r GitHubRepository) GetLatestRelease(ctx context.Context) (release.Release, RateLimitData, error) {
 	client := github.NewClient(nil)
 
 	author, repo := r.SeparateName()
-	release, resp, err := client.Repositories.GetLatestRelease(ctx, author, repo)
+	repoRelease, resp, err := client.Repositories.GetLatestRelease(ctx, author, repo)
 
 	rateLimitData, errr := makeRateLimitData(resp.Header)
 	if errr != nil {
-		return "", rateLimitData, fmt.Errorf("can't get rate limit data: %w", err)
+		return release.Release{}, rateLimitData, fmt.Errorf("can't get rate limit data: %w", err)
 	}
 
 	metrics.SetRateLimitValue(float64(rateLimitData.Limit))
@@ -33,12 +34,19 @@ func (r GitHubRepository) GetLatestRelease(ctx context.Context) (string, RateLim
 
 	rateLimitErr := isRateLimited(err)
 	if rateLimitErr != nil {
-		return "", rateLimitData, rateLimitErr
+		return release.Release{}, rateLimitData, rateLimitErr
 	}
 
 	if err != nil {
-		return "", rateLimitData, fmt.Errorf("%s: %w", r.Name, err)
+		return release.Release{}, rateLimitData, fmt.Errorf("%s: %w", r.Name, err)
 	}
 
-	return release.GetName(), rateLimitData, nil
+	release := release.Release{
+		Project:     repo,
+		Author:      author,
+		Version:     repoRelease.GetName(),
+		Description: repoRelease.GetBody(),
+		URL:         repoRelease.GetURL(),
+	}
+	return release, rateLimitData, nil
 }

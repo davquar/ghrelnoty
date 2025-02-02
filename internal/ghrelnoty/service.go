@@ -11,6 +11,7 @@ import (
 	smtpd "it.davquar/gitrelnoty/internal/ghrelnoty/destinations/smtp"
 	"it.davquar/gitrelnoty/internal/metrics"
 	"it.davquar/gitrelnoty/internal/store"
+	"it.davquar/gitrelnoty/pkg/release"
 )
 
 // Service holds the app's configuration and an instance of the KV store
@@ -24,11 +25,11 @@ type Service struct {
 
 // Notifier is implemented by notification system (Destination)
 type Notifier interface {
-	Notify(repo string, release string) error
+	Notify(release release.Release) error
 }
 
 type Releaser interface {
-	GetLatestRelease(context.Context) (string, RateLimitData, error)
+	GetLatestRelease(context.Context) (release.Release, RateLimitData, error)
 	Config() RepositoryConfig
 }
 
@@ -133,14 +134,14 @@ func (s Service) Work(c chan (error)) {
 			continue
 		}
 
-		changed, err := s.Store.CompareAndSet(repo.Config().Name, release)
+		changed, err := s.Store.CompareAndSet(repo.Config().Name, release.Version)
 		if err != nil {
 			metrics.DBError()
 			slog.ErrorContext(ctx, "can't store in db", slog.String("repo", repo.Config().Name), slog.Any("err", err))
 			c <- err
 		}
 
-		slog.Debug("got data", slog.String("repo", repo.Config().Name), slog.String("release", release), slog.Bool("changed", changed))
+		slog.Debug("got data", slog.String("repo", repo.Config().Name), slog.String("release", release.Version), slog.Bool("changed", changed))
 
 		if changed {
 			metrics.NewReleaseFound()
@@ -152,7 +153,7 @@ func (s Service) Work(c chan (error)) {
 				continue
 			}
 
-			err = notifier.Notify(repo.Config().Name, release)
+			err = notifier.Notify(release)
 			if err != nil {
 				metrics.NotificationError()
 				slog.Error("cannot notify", slog.Any("err", err))

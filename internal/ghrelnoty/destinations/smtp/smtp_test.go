@@ -1,10 +1,13 @@
 package smtp
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	smtpmock "github.com/mocktools/go-smtp-mock/v2"
+	"it.davquar/gitrelnoty/pkg/release"
 )
 
 func TestNotifySMTP(t *testing.T) {
@@ -28,7 +31,13 @@ func TestNotifySMTP(t *testing.T) {
 		Port:     strconv.Itoa(server.PortNumber()),
 	}
 
-	err = d.Notify("testrepo", "v0.1.2")
+	err = d.Notify(release.Release{
+		Project:     "dummy-project",
+		Author:      "dummy-author",
+		Version:     "v1.2.3",
+		Description: "This is a dummy release just for testing.",
+		URL:         "some-url",
+	})
 	if err != nil {
 		t.Fatalf("unexpected error sending email: %v", err)
 	}
@@ -41,4 +50,28 @@ func TestNotifySMTP(t *testing.T) {
 	if len(msgs[0].RcpttoRequestResponse()) != 1 {
 		t.Fatalf("expected 1 receiver, got %d", len(msgs[0].RcpttoRequestResponse()))
 	}
+
+	expmsg := makeRawMsg(d.From, d.To)
+	if msgs[0].MsgRequest() != expmsg {
+		t.Fatalf("expected msg '%s', got '%s'", expmsg, msgs[0].MsgRequest())
+	}
+}
+
+func makeRawMsg(from string, to string) string {
+	s := fmt.Sprintf(`From: %s
+To: %s
+Subject: New release: dummy-author/dummy-project v1.2.3
+
+GHRelNoty
+---------
+
+New release for dummy-author/dummy-project: v1.2.3
+
+This is a dummy release just for testing.
+
+URL: some-url
+`, from, to)
+
+	// set \r\n as newline sequence, because that's what is used in the msg field
+	return strings.ReplaceAll(s, "\n", "\r\n")
 }

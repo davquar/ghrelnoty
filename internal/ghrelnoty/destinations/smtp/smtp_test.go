@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	smtpmock "github.com/mocktools/go-smtp-mock/v2"
+	"it.davquar/gitrelnoty/pkg/release"
 )
 
 func TestNotifySMTP(t *testing.T) {
@@ -28,7 +29,11 @@ func TestNotifySMTP(t *testing.T) {
 		Port:     strconv.Itoa(server.PortNumber()),
 	}
 
-	err = d.Notify("testrepo", "v0.1.2")
+	err = d.Notify(release.Release{
+		Project: "dummy-project",
+		Author:  "dummy-author",
+		Version: "v1.2.3",
+	})
 	if err != nil {
 		t.Fatalf("unexpected error sending email: %v", err)
 	}

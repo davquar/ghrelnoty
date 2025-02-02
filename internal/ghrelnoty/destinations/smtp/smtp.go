@@ -3,6 +3,8 @@ package smtp
 import (
 	"fmt"
 	"net/smtp"
+
+	"it.davquar/gitrelnoty/pkg/release"
 )
 
 // Destination holds the configuration for the SMTP destination.
@@ -15,10 +17,9 @@ type Destination struct {
 	Password string `yaml:"password"`
 }
 
-// Notify sends an email to Destination, to announce a new release of the given repo.
-func (d Destination) Notify(repo string, release string) error {
-	subject := fmt.Sprintf("New release: %s:%s", repo, release)
-	body := fmt.Sprintf("GHRelNoty detected a new release: %s:%s", repo, release)
+// Notify sends an email to Destination, to announce a new Release of the given repo.
+func (d Destination) Notify(release release.Release) error {
+	subject := fmt.Sprintf("New release: %s %s", release.Repo(), release.Version)
 	msg := []byte(fmt.Sprintf("From: %s\r\n"+
 		"To: %s\r\n"+
 		"Subject: %s\r\n"+

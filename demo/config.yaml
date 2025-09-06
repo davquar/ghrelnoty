@@ -28,11 +28,12 @@ destinations:
   email:
     type: smtp
     config:
-      from: sample
-      to: sample
+      from: GHRelNoty <ghrelnoty@localhost>
+      to: smtp4dev <test@localhost>
       host: localhost
-      port: 587
+      port: 2525
       username: demo
       password: demo
+      html: true
 
 metrics_port: 9090

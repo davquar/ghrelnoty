@@ -46,7 +46,7 @@ func (r GitHubRepository) GetLatestRelease(ctx context.Context) (release.Release
 		Author:      author,
 		Version:     repoRelease.GetName(),
 		Description: repoRelease.GetBody(),
-		URL:         repoRelease.GetURL(),
+		URL:         repoRelease.GetHTMLURL(),
 	}
 	return release, rateLimitData, nil
 }

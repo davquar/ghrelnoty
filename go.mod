@@ -4,6 +4,7 @@ go 1.22.10
 
 require (
 	github.com/google/go-github/v68 v68.0.0
+	github.com/yuin/goldmark v1.7.13
 	go.etcd.io/bbolt v1.3.11
 	gopkg.in/yaml.v3 v3.0.1
 )

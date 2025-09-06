@@ -1,9 +1,13 @@
 package smtp
 
 import (
+	"bytes"
 	"fmt"
 	"net/smtp"
 
+	"github.com/yuin/goldmark"
+	goldmarkext "github.com/yuin/goldmark/extension"
+	goldmarkhtml "github.com/yuin/goldmark/renderer/html"
 	"it.davquar/gitrelnoty/pkg/release"
 )
 
@@ -15,6 +19,7 @@ type Destination struct {
 	Port     string `yaml:"port"`
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
+	HTML     bool   `yaml:"html"`
 }
 
 // Notify sends an email to Destination, to announce a new Release of the given repo.
@@ -24,7 +29,7 @@ func (d Destination) Notify(release release.Release) error {
 		"To: %s\r\n"+
 		"Subject: %s\r\n"+
 		"\r\n"+
-		"%s\r\n", d.From, d.To, subject, plainText(release)))
+		"%s\r\n", d.From, d.To, subject, makeBody(release, d.HTML)))
 
 	err := smtp.SendMail(d.Host+":"+d.Port, d.auth(), d.From, []string{d.To}, msg)
 
@@ -39,8 +44,14 @@ func (d Destination) auth() smtp.Auth {
 	return smtp.PlainAuth("", d.From, d.Password, d.Host)
 }
 
-// plainText returns the plain text email body for the given Release.
-func plainText(r release.Release) string {
+func makeBody(r release.Release, html bool) string {
+	if html {
+		return htmlContent(r)
+	}
+	return plaintextContent(r)
+}
+
+func plaintextContent(r release.Release) string {
 	return fmt.Sprintf(`GHRelNoty
 ---------
 
@@ -50,5 +61,31 @@ New release for %s/%s: %s
 
 URL: %s`, r.Author, r.Project, r.Version,
 		r.Description,
+		r.URL)
+}
+
+func htmlContent(r release.Release) string {
+	md := goldmark.New(
+		goldmark.WithExtensions(goldmarkext.GFM),
+		goldmark.WithRendererOptions(
+			goldmarkhtml.WithUnsafe(),
+		),
+	)
+
+	var buf bytes.Buffer
+	if err := md.Convert([]byte(r.Description), &buf); err != nil {
+		return plaintextContent(r)
+	}
+
+	return fmt.Sprintf(`<h1>New release for %s/%s: %s
+
+</hr>
+
+%s
+
+</hr>
+
+URL: %s`, r.Author, r.Project, r.Version,
+		buf.String(),
 		r.URL)
 }

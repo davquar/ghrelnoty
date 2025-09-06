@@ -85,7 +85,7 @@ func htmlContent(r release.Release) string {
 
 </hr>
 
-URL: %s`, r.Author, r.Project, r.Version,
+URL: <a href="%s">%s</a>`, r.Author, r.Project, r.Version,
 		buf.String(),
-		r.URL)
+		r.URL, r.URL)
 }

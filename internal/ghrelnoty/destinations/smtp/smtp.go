@@ -11,6 +11,8 @@ import (
 	"it.davquar/gitrelnoty/pkg/release"
 )
 
+const boundary = "knef9j23nr82"
+
 // Destination holds the configuration for the SMTP destination.
 type Destination struct {
 	From     string `yaml:"from"`
@@ -25,15 +27,30 @@ type Destination struct {
 // Notify sends an email to Destination, to announce a new Release of the given repo.
 func (d Destination) Notify(release release.Release) error {
 	subject := fmt.Sprintf("New release: %s %s", release.Repo(), release.Version)
-	msg := []byte(fmt.Sprintf("From: %s\r\n"+
-		"To: %s\r\n"+
-		"Subject: %s\r\n"+
-		"\r\n"+
-		"%s\r\n", d.From, d.To, subject, makeBody(release, d.HTML)))
-
+	msg := makeMsg(d.From, d.To, subject, release, d.HTML)
 	err := smtp.SendMail(d.Host+":"+d.Port, d.auth(), d.From, []string{d.To}, msg)
 
 	return err
+}
+
+func makeMsg(from string, to string, subject string, r release.Release, isMultipart bool) []byte {
+	if isMultipart {
+		return fmt.Appendf(nil,
+			"From: %s\r\n"+
+				"To: %s\r\n"+
+				"Subject: %s\r\n"+
+				"MIME-Version: 1.0\r\n"+
+				"Content-Type: multipart/alternative; boundary=%q\r\n"+
+				"\r\n%s",
+			from, to, subject, boundary, multipart(htmlContent(r), plaintextContent(r)))
+	}
+
+	return fmt.Appendf(nil,
+		"From: %s\r\n"+
+			"To: %s\r\n"+
+			"Subject: %s\r\n"+
+			"\r\n"+
+			"%s\r\n", from, to, subject, plaintextContent(r))
 }
 
 // auth returns smtp.Auth if username and password are set, otherwise nil indicating NOAUTH
@@ -42,13 +59,6 @@ func (d Destination) auth() smtp.Auth {
 		return nil
 	}
 	return smtp.PlainAuth("", d.From, d.Password, d.Host)
-}
-
-func makeBody(r release.Release, html bool) string {
-	if html {
-		return htmlContent(r)
-	}
-	return plaintextContent(r)
 }
 
 func plaintextContent(r release.Release) string {
@@ -77,15 +87,18 @@ func htmlContent(r release.Release) string {
 		return plaintextContent(r)
 	}
 
-	return fmt.Sprintf(`<h1>New release for %s/%s: %s
-
+	return fmt.Sprintf(`<h1>New release for %s/%s: %s</h1>
 </hr>
-
 %s
-
 </hr>
+<p>URL: <a href="%s">%s</a></p>`, r.Author, r.Project, r.Version, buf.String(), r.URL, r.URL)
+}
 
-URL: <a href="%s">%s</a>`, r.Author, r.Project, r.Version,
-		buf.String(),
-		r.URL, r.URL)
+func multipart(html string, plain string) string {
+	mime := fmt.Sprintf("MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=%q\r\n\r\n", boundary)
+	plainPart := fmt.Sprintf("--%s\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n%s\r\n", boundary, plain)
+	htmlPart := fmt.Sprintf("--%s\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n<html><body>%s</body></html>\r\n", boundary, html)
+	end := fmt.Sprintf("--%s--\r\n", boundary)
+
+	return mime + plainPart + htmlPart + end
 }
